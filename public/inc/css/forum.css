@@ -1,0 +1,273 @@
+/*** Board Styles **/
+
+/* NAV */
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.post a {
+  color: #000;
+}
+
+.post img {
+  width: 100%;
+}
+
+.board-directory {
+  width: 100%;
+}
+
+.board-directory ul li {
+  display: inline-block;
+  line-height: 2em;
+}
+
+.board-directory ul li a {
+  text-decoration: none;
+  color: #000;
+}
+
+.board-directory ul li:not(:last-child)::after {
+  content: ' >';
+}
+
+/******/
+
+/* TABLE */
+
+.board {
+  display: table;
+  width: 100%;
+  border: 1px solid #e4e4e4;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+
+.board-heading {
+  padding-left: 10px;
+  margin-top: 35px;
+  font-size: 30px;
+  text-transform: uppercase;
+}
+
+.board-heading-caption {
+  margin-left: 30px;
+}
+
+.board .board-head {
+  display: table-header-group;
+  width: 100%;
+  background-color: #FFF;
+}
+
+.board .board-head > div {
+  display: table-cell;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 10px 15px;
+}
+
+.board .board-group {
+  display: table-row-group;
+  width: 100%;
+}
+
+.board .board-group {
+  background-color: #F7F7F7;
+}
+
+.board .board-group:not(:last-child) div{
+  border-bottom: 1px solid #E1E1E1;
+}
+
+.board .board-row {
+  display: table-row;
+}
+
+.board .board-group .board-row div {
+  font-size: 14px;
+  padding: 10px 15px;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.board .board-group .board-row a {
+  text-decoration: none;
+  color: #000;
+}
+
+.board .board-group .board-row {
+  vertical-align: middle;
+}
+
+.board .board-group .board-row .board-icon {
+  padding-right: 0;
+  text-align: center;
+  font-size: 24px;
+}
+
+.board .board-group .board-row .board-title {
+  width: 55%;
+}
+
+.board .board-group .board-row .board-title h4 {
+  font-size: 16px;
+}
+
+.board .board-group .board-row .board-title p {
+  font-size: 14px;
+}
+
+.board .board-group .board-row .board-thread {
+  padding-right: 10px;
+}
+
+.board .board-group .board-row .board-lst h4 {
+  font-size: 16px;
+}
+
+.board-group-important {
+  background-color: #D2D2D2 !important;
+}
+
+.board .board-footer {
+  display: table-header-group;
+  width: 100%;
+  background-color: #FFF;
+}
+
+.board .board-footer > div {
+  display: table-cell;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 10px 15px;
+}
+
+@media all and (max-width:800px) {
+  .board .board-head > div:last-child,
+  .board .board-group .board-row .board-lst,
+  .board .board-footer > div:last-child {
+    display: none;
+  }
+}
+
+/********/
+
+.board-profile {
+  float:left;
+  padding-top: 5px;
+  padding-right: 20px;
+}
+
+.board-profile img {
+  max-height: 35px;
+}
+
+.board-legend {
+  width: 100%;
+  margin-top: 40px;
+  padding-top: 5%;
+  padding-bottom: 5%;
+  background-color: #FFF;
+}
+
+.board-legend ul {
+  width: 100%;
+  list-style: none;
+  text-align: left;
+  font-size: 18px;
+}
+
+/* FORM */
+
+.board-form {
+  width: 100%;
+}
+
+.board-form-group {
+  padding-bottom: 20px;
+}
+
+.board-form-group button {
+  margin-left: 20px;
+}
+
+/*******/
+
+/* POST */
+
+.post-heading {
+  width: 100%;
+  height: 35px;
+  padding: 5px;
+  background-color: #FFF;
+  border: 1px solid #E1E1E1;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.post-heading > div {
+  display: inline-block;
+}
+
+.post {
+  padding: 15px;
+  height: auto;
+  border: 1px solid #E1E1E1;
+  margin-bottom: 16px;
+}
+
+.post-header {
+  margin-bottom: 35px;
+}
+
+.post-header::after {
+  clear: both;
+}
+
+.post-header > div {float: left}
+
+.post-header > div:first-child {
+  width: 50px;
+}
+
+.post-header > div:not(:first-child) {
+  padding-left: 15px;
+}
+
+.post-header > .post-meta > span:last-child::before {
+  content: "/";
+}
+
+.post-footer {
+  font-size: 15px;
+  padding-bottom: 25px;
+}
+
+.post-footer > div {
+  display: inline-block;
+}
+
+.post-header > .post-info,
+.post-footer > .post-info {
+  float: right;
+}
+
+.post .post-info {
+  opacity: 0.06;
+}
+
+.post:hover .post-info {
+  opacity: 1;
+}
+
+.post-body {
+  margin-top: 80px;
+  vertical-align: top;
+}
+
+/* GADGET */
+
+.gadget {
+  padding-bottom: 15px;
+}
