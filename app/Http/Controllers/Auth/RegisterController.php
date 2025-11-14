@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Str;
 use Auth;
 
 
@@ -81,7 +82,7 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
-        $user->slug = $user->id.'-'.str_slug($data['username'], '-');
+        $user->slug = $user->id.'-'.Str::slug($data['username'], '-');
         $user->level = "1";
         $user->exp = "0";
         $user->money = "25";

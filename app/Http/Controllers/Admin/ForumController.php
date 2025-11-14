@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 use App\Http\Controllers\Controller;
 
@@ -51,7 +52,7 @@ class ForumController extends Controller
      $section->ordered = $request->input('orderby');
      $section->status = $request->input('status');
      $section->save();
-     $section->slug = $section->id.'-'.str_slug($request->input('name'),'-');
+     $section->slug = $section->id.'-'.Str::slug($request->input('name'),'-');
      $section->save();
      return redirect('/admin/forum');
    }
@@ -71,7 +72,7 @@ class ForumController extends Controller
      $section->status = $request->input('status');
      if(!empty($request->input('name'))){
        //Cambio lo slug della Sezione
-       $section->slug = $section->id.'-'.str_slug($request->input('name'),'-');
+       $section->slug = $section->id.'-'.Str::slug($request->input('name'),'-');
      }
      $section->save();
      return redirect('/admin/forum');
