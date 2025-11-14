@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Harry Potter Custom Styles */
+@layer components {
+  .house-card {
+    @apply rounded-lg shadow-lg p-6 transition-all duration-300 hover:shadow-2xl hover:scale-105;
+  }
+
+  .gryffindor-card {
+    @apply house-card bg-gradient-to-br from-red-600 to-yellow-600 text-white;
+  }
+
+  .slytherin-card {
+    @apply house-card bg-gradient-to-br from-green-700 to-gray-800 text-white;
+  }
+
+  .ravenclaw-card {
+    @apply house-card bg-gradient-to-br from-blue-700 to-blue-900 text-white;
+  }
+
+  .hufflepuff-card {
+    @apply house-card bg-gradient-to-br from-yellow-500 to-yellow-700 text-white;
+  }
+
+  .magical-button {
+    @apply px-6 py-3 rounded-lg font-semibold text-white shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl;
+  }
+
+  .admin-sidebar {
+    @apply fixed left-0 top-0 h-full w-64 bg-gray-900 text-white shadow-xl;
+  }
+
+  .admin-content {
+    @apply ml-64 p-8 bg-gray-50 min-h-screen;
+  }
+
+  .stat-card {
+    @apply bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200;
+  }
+
+  .table-modern {
+    @apply min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg overflow-hidden;
+  }
+
+  .table-header {
+    @apply bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
+  }
+
+  .badge-admin {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800;
+  }
+
+  .badge-moderator {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+  }
+
+  .badge-user {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800;
+  }
+
+  .form-input-modern {
+    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-40;
+  }
+
+  .modal-content {
+    @apply relative bg-white rounded-lg shadow-xl transform transition-all z-50;
+  }
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Harry Potter Theme */
+.parchment-bg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23d4af37' fill-opacity='0.1' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+  background-color: #f9f6f0;
+}
+
+.magical-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark-magical-gradient {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
