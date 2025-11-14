@@ -93,7 +93,10 @@ Route::group(['prefix' => 'admin',  'middleware' => 'admin'], function(){
 
 });
 
-Auth::routes();
+// Auth::routes(); // Commented out - requires laravel/ui package
+// If you need these routes, you can either:
+// 1. Install laravel/ui: composer require laravel/ui
+// 2. Or define authentication routes manually here
 
 Route::group(['middleware' => 'admitted'],function(){
   Route::get('/', 'HomeController@index')->name('home');
