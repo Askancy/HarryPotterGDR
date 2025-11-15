@@ -2,35 +2,32 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Subject extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'name',
         'slug',
         'description',
-        'min_grade',
-        'max_grade',
-        'is_core',
-        'is_active',
+        'professor_name',
+        'classroom',
+        'difficulty',
+        'min_level',
         'icon',
+        'color',
+        'base_exp',
+        'base_house_points',
+        'primary_skill',
+        'secondary_skill',
+        'is_active',
     ];
 
     protected $casts = [
-        'is_core' => 'boolean',
         'is_active' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
-    /**
-     * Boot method per generare slug automaticamente
-     */
     protected static function boot()
     {
         parent::boot();
@@ -43,134 +40,40 @@ class Subject extends Model
     }
 
     /**
-     * Relazione con le classi
+     * Get daily lessons for this subject.
      */
-    public function classes()
+    public function dailyLessons()
     {
-        return $this->hasMany(SchoolClass::class);
+        return $this->hasMany(DailyLesson::class);
     }
 
     /**
-     * Ottieni tutte le materie obbligatorie
+     * Get user progress for this subject.
      */
-    public static function getCoreSubjects()
+    public function userProgress()
     {
-        return static::where('is_core', true)
-            ->where('is_active', true)
-            ->get();
+        return $this->hasMany(UserSubjectProgress::class);
     }
 
     /**
-     * Ottieni materie per anno
+     * Get difficulty label.
      */
-    public static function getForGrade(int $grade)
+    public function getDifficultyLabelAttribute()
     {
-        return static::where('is_active', true)
-            ->where('min_grade', '<=', $grade)
-            ->where('max_grade', '>=', $grade)
-            ->get();
+        return match($this->difficulty) {
+            'beginner' => 'Principiante',
+            'intermediate' => 'Intermedio',
+            'advanced' => 'Avanzato',
+            'expert' => 'Esperto',
+            default => 'Principiante'
+        };
     }
 
     /**
-     * Seed delle materie base di Hogwarts
+     * Check if user can attend this subject.
      */
-    public static function seedHogwartsSubjects(): void
+    public function canBeAttendedBy(User $user)
     {
-        $subjects = [
-            // Materie obbligatorie (anni 1-5)
-            [
-                'name' => 'Difesa contro le Arti Oscure',
-                'description' => 'Insegnamento delle difese contro le creature oscure e la magia nera',
-                'min_grade' => 1,
-                'max_grade' => 7,
-                'is_core' => true,
-                'icon' => '🛡️',
-            ],
-            [
-                'name' => 'Trasfigurazione',
-                'description' => 'Arte di trasformare un oggetto in un altro',
-                'min_grade' => 1,
-                'max_grade' => 7,
-                'is_core' => true,
-                'icon' => '✨',
-            ],
-            [
-                'name' => 'Pozioni',
-                'description' => 'Preparazione e utilizzo di pozioni magiche',
-                'min_grade' => 1,
-                'max_grade' => 7,
-                'is_core' => true,
-                'icon' => '🧪',
-            ],
-            [
-                'name' => 'Incantesimi',
-                'description' => 'Studio e pratica degli incantesimi',
-                'min_grade' => 1,
-                'max_grade' => 7,
-                'is_core' => true,
-                'icon' => '🪄',
-            ],
-            [
-                'name' => 'Erbologia',
-                'description' => 'Studio delle piante magiche e delle loro proprietà',
-                'min_grade' => 1,
-                'max_grade' => 7,
-                'is_core' => true,
-                'icon' => '🌿',
-            ],
-            [
-                'name' => 'Storia della Magia',
-                'description' => 'Storia del mondo magico e dei maghi famosi',
-                'min_grade' => 1,
-                'max_grade' => 7,
-                'is_core' => true,
-                'icon' => '📚',
-            ],
-            [
-                'name' => 'Astronomia',
-                'description' => 'Studio dei corpi celesti e della loro influenza sulla magia',
-                'min_grade' => 1,
-                'max_grade' => 7,
-                'is_core' => true,
-                'icon' => '🔭',
-            ],
-            // Materie opzionali (anni 3+)
-            [
-                'name' => 'Divinazione',
-                'description' => 'Arte di predire il futuro',
-                'min_grade' => 3,
-                'max_grade' => 7,
-                'is_core' => false,
-                'icon' => '🔮',
-            ],
-            [
-                'name' => 'Cura delle Creature Magiche',
-                'description' => 'Studio e cura delle creature magiche',
-                'min_grade' => 3,
-                'max_grade' => 7,
-                'is_core' => false,
-                'icon' => '🐉',
-            ],
-            [
-                'name' => 'Aritmanzia',
-                'description' => 'Studio delle proprietà magiche dei numeri',
-                'min_grade' => 3,
-                'max_grade' => 7,
-                'is_core' => false,
-                'icon' => '🔢',
-            ],
-            [
-                'name' => 'Studio delle Rune',
-                'description' => 'Studio delle rune antiche e del loro potere',
-                'min_grade' => 3,
-                'max_grade' => 7,
-                'is_core' => false,
-                'icon' => 'ᚱ',
-            ],
-        ];
-
-        foreach ($subjects as $subject) {
-            static::firstOrCreate(['slug' => Str::slug($subject['name'])], $subject);
-        }
+        return $user->level >= $this->min_level;
     }
 }

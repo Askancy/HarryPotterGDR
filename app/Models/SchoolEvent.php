@@ -2,122 +2,64 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class SchoolEvent extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'school_year_id',
-        'school_term_id',
         'name',
-        'type',
         'description',
-        'event_date',
-        'duration_minutes',
-        'participants',
-        'rewards',
-        'is_mandatory',
-        'completed',
+        'start_date',
+        'end_date',
+        'type',
+        'suspend_lessons',
+        'bonuses',
+        'icon',
+        'color',
     ];
 
     protected $casts = [
-        'event_date' => 'datetime',
-        'participants' => 'array',
-        'rewards' => 'array',
-        'is_mandatory' => 'boolean',
-        'completed' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'suspend_lessons' => 'boolean',
+        'bonuses' => 'array',
     ];
 
     /**
-     * Relazione con l'anno scolastico
+     * Check if event is currently active.
      */
-    public function schoolYear()
+    public function isActive()
     {
-        return $this->belongsTo(SchoolYear::class);
+        $today = Carbon::today();
+        return $today->between($this->start_date, $this->end_date ?? $this->start_date);
     }
 
     /**
-     * Relazione con il termine
+     * Get type label.
      */
-    public function term()
+    public function getTypeLabelAttribute()
     {
-        return $this->belongsTo(SchoolTerm::class, 'school_term_id');
+        return match($this->type) {
+            'holiday' => 'Festività',
+            'exam' => 'Esame',
+            'event' => 'Evento',
+            'special' => 'Speciale',
+            default => 'Evento'
+        };
     }
 
     /**
-     * Relazione con le partecipazioni
+     * Get active events for today.
      */
-    public function participations()
+    public static function getActiveEvents()
     {
-        return $this->hasMany(EventParticipation::class);
-    }
-
-    /**
-     * Utenti partecipanti
-     */
-    public function attendees()
-    {
-        return $this->belongsToMany(User::class, 'event_participations')
-            ->withPivot('status', 'score', 'notes')
-            ->withTimestamps();
-    }
-
-    /**
-     * Registra un utente all'evento
-     */
-    public function registerUser(User $user): EventParticipation
-    {
-        return EventParticipation::create([
-            'school_event_id' => $this->id,
-            'user_id' => $user->id,
-            'status' => 'registered',
-        ]);
-    }
-
-    /**
-     * Segna l'evento come completato e distribuisci ricompense
-     */
-    public function complete(): void
-    {
-        $this->update(['completed' => true]);
-
-        // Distribuisci ricompense agli utenti che hanno partecipato
-        if ($this->rewards) {
-            foreach ($this->participations()->where('status', 'attended')->get() as $participation) {
-                $this->distributeRewards($participation->user);
-            }
-        }
-    }
-
-    /**
-     * Distribuisci ricompense a un utente
-     */
-    protected function distributeRewards(User $user): void
-    {
-        if (!$this->rewards) {
-            return;
-        }
-
-        foreach ($this->rewards as $rewardType => $amount) {
-            switch ($rewardType) {
-                case 'money':
-                    $user->addMoney($amount, "Ricompensa evento: {$this->name}");
-                    break;
-                case 'exp':
-                    $user->addExperience($amount);
-                    break;
-                case 'house_points':
-                    // Aggiungi punti alla casa
-                    if ($user->team) {
-                        // Questo richiede il sistema house_points esistente
-                    }
-                    break;
-            }
-        }
+        $today = Carbon::today();
+        return static::where('start_date', '<=', $today)
+            ->where(function ($query) use ($today) {
+                $query->where('end_date', '>=', $today)
+                    ->orWhereNull('end_date');
+            })
+            ->get();
     }
 }
