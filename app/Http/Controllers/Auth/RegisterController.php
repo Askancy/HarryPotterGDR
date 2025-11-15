@@ -28,13 +28,6 @@ class RegisterController extends Controller
     use RegistersUsers;
 
     /**
-     * Where to redirect users after registration.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/sorting-hat';
-
-    /**
      * Create a new controller instance.
      *
      * @return void
@@ -42,6 +35,17 @@ class RegisterController extends Controller
     public function __construct()
     {
         $this->middleware('guest');
+    }
+
+    /**
+     * Get the post-registration redirect path.
+     * New users always go to the sorting hat.
+     *
+     * @return string
+     */
+    protected function redirectTo()
+    {
+        return route('sorting-hat.show');
     }
 
     public function showRegistrationForm()
