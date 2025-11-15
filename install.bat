@@ -28,30 +28,69 @@ php --version | findstr /C:"PHP"
 echo.
 
 REM Check Composer
+set COMPOSER_FOUND=0
+
+REM Try 'composer' command
 where composer >nul 2>nul
-if %errorlevel% neq 0 (
-    color 0E
-    echo [ATTENZIONE] Composer non trovato
-    echo.
-    echo Vuoi installarlo adesso? (S/N)
-    set /p install_composer=
-    if /i "%install_composer%"=="S" (
-        echo Download Composer da: https://getcomposer.org/
-        start https://getcomposer.org/download/
-        echo.
-        echo Dopo l'installazione, riavvia questo script.
-        pause
-        exit /b 1
-    ) else (
-        color 0C
-        echo [ERRORE] Composer e' necessario per continuare
-        pause
-        exit /b 1
+if %errorlevel% equ 0 (
+    set COMPOSER_FOUND=1
+    set COMPOSER_CMD=composer
+)
+
+REM Try 'composer.bat'
+if %COMPOSER_FOUND% equ 0 (
+    where composer.bat >nul 2>nul
+    if %errorlevel% equ 0 (
+        set COMPOSER_FOUND=1
+        set COMPOSER_CMD=composer.bat
     )
 )
 
+REM Try 'composer.phar' with PHP
+if %COMPOSER_FOUND% equ 0 (
+    if exist "composer.phar" (
+        set COMPOSER_FOUND=1
+        set COMPOSER_CMD=php composer.phar
+    )
+)
+
+REM If composer not found, prompt for installation
+if %COMPOSER_FOUND% equ 0 (
+    color 0E
+    echo [ATTENZIONE] Composer non trovato nel PATH di sistema
+    echo.
+    echo Composer puo' essere installato in diversi modi:
+    echo   1. Installer Windows: https://getcomposer.org/Composer-Setup.exe
+    echo   2. composer.phar locale nella cartella del progetto
+    echo   3. Aggiungere Composer al PATH di sistema
+    echo.
+    choice /C SN /M "Vuoi aprire la pagina di download di Composer"
+    if errorlevel 2 goto composer_not_found
+    if errorlevel 1 (
+        echo.
+        echo Apertura browser...
+        start https://getcomposer.org/download/
+        echo.
+        echo ISTRUZIONI:
+        echo   1. Scarica Composer-Setup.exe e installalo
+        echo   2. Riavvia il prompt dei comandi
+        echo   3. Esegui di nuovo questo installer
+        echo.
+        pause
+        exit /b 1
+    )
+    :composer_not_found
+    color 0C
+    echo.
+    echo [ERRORE] Composer e' necessario per continuare
+    echo.
+    echo Installalo da: https://getcomposer.org/download/
+    pause
+    exit /b 1
+)
+
 echo [OK] Composer trovato
-composer --version
+%COMPOSER_CMD% --version
 echo.
 
 REM Check Node (optional)
@@ -92,7 +131,7 @@ echo.
 REM Install composer dependencies if needed
 if not exist "vendor" (
     echo [*] Installazione dipendenze Composer...
-    call composer install --no-interaction
+    call %COMPOSER_CMD% install --no-interaction
     if %errorlevel% neq 0 (
         color 0C
         echo [ERRORE] Errore durante l'installazione delle dipendenze
@@ -143,7 +182,7 @@ if exist ".env.example" (
 REM Install composer dependencies
 if not exist "vendor" (
     echo [*] Installazione dipendenze Composer...
-    call composer install --no-interaction --prefer-dist
+    call %COMPOSER_CMD% install --no-interaction --prefer-dist
     if %errorlevel% neq 0 (
         color 0C
         echo [ERRORE] Errore durante l'installazione
@@ -214,7 +253,7 @@ echo.
 REM Composer
 if not exist "vendor" (
     echo [*] Installazione dipendenze Composer...
-    call composer install --no-interaction
+    call %COMPOSER_CMD% install --no-interaction
     echo [OK] Dipendenze Composer installate
 )
 
