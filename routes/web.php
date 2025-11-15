@@ -332,3 +332,19 @@ Route::group(['prefix' => 'messages', 'middleware' => 'auth'], function(){
   Route::post('/send', 'MessageController@send')->name('messages.send');
   Route::post('/mark-as-read', 'MessageController@markAsRead')->name('messages.mark-as-read');
 });
+
+// Lessons Routes
+Route::group(['prefix' => 'lessons', 'middleware' => 'auth'], function(){
+  Route::get('/', 'LessonController@index')->name('lessons.index');
+  Route::get('/progress', 'LessonController@progress')->name('lessons.progress');
+  Route::get('/{id}', 'LessonController@show')->name('lessons.show');
+  Route::get('/{id}/quiz', 'LessonController@quiz')->name('lessons.quiz');
+  Route::post('/{id}/attend', 'LessonController@attend')->name('lessons.attend');
+});
+
+// Perks Routes
+Route::group(['prefix' => 'perks', 'middleware' => 'auth'], function(){
+  Route::get('/', 'PerkController@index')->name('perks.index');
+  Route::post('/{id}/unlock', 'PerkController@unlock')->name('perks.unlock');
+  Route::post('/{id}/toggle', 'PerkController@toggle')->name('perks.toggle');
+});

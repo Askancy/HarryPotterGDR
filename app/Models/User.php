@@ -576,4 +576,329 @@ class User extends Authenticatable
         $this->increment('profile_views');
     }
 
+    /**
+     * Get user's lesson attendances.
+     */
+    public function lessonAttendances()
+    {
+        return $this->hasMany(LessonAttendance::class);
+    }
+
+    /**
+     * Get user's subject progress.
+     */
+    public function subjectProgress()
+    {
+        return $this->hasMany(UserSubjectProgress::class);
+    }
+
+    /**
+     * Get progress for a specific subject.
+     */
+    public function getSubjectProgress(Subject $subject)
+    {
+        return $this->subjectProgress()->firstOrCreate(
+            ['subject_id' => $subject->id],
+            [
+                'level' => 1,
+                'experience' => 0,
+                'required_exp' => 100,
+            ]
+        );
+    }
+
+    /**
+     * Attend a lesson.
+     */
+    public function attendLesson(DailyLesson $lesson, $performance = 'acceptable', $correctAnswers = 0, $totalQuestions = 5)
+    {
+        if ($lesson->hasUserAttended($this)) {
+            return false;
+        }
+
+        if ($lesson->isFull()) {
+            return false;
+        }
+
+        // Calculate rewards
+        $baseExp = $lesson->subject->base_exp * $lesson->exp_multiplier;
+        $basePoints = $lesson->subject->base_house_points * $lesson->points_multiplier;
+
+        // Performance multiplier
+        $performanceMultiplier = match($performance) {
+            'poor' => 0.5,
+            'acceptable' => 1.0,
+            'good' => 1.3,
+            'excellent' => 1.6,
+            'outstanding' => 2.0,
+            default => 1.0
+        };
+
+        $expEarned = (int)($baseExp * $performanceMultiplier);
+        $pointsEarned = (int)($basePoints * $performanceMultiplier);
+
+        // Create attendance
+        $attendance = LessonAttendance::create([
+            'user_id' => $this->id,
+            'daily_lesson_id' => $lesson->id,
+            'subject_id' => $lesson->subject_id,
+            'performance' => $performance,
+            'exp_earned' => $expEarned,
+            'house_points_earned' => $pointsEarned,
+            'questions_answered' => $totalQuestions,
+            'correct_answers' => $correctAnswers,
+        ]);
+
+        // Update lesson participants
+        $lesson->increment('current_participants');
+
+        // Update user experience
+        $this->addExperience($expEarned);
+
+        // Update subject progress
+        $progress = $this->getSubjectProgress($lesson->subject);
+        $leveledUp = $progress->addExperience($expEarned);
+        $progress->increment('total_lessons_attended');
+        $progress->total_questions_answered += $totalQuestions;
+        $progress->total_correct_answers += $correctAnswers;
+        $progress->average_score = ($progress->total_correct_answers / max($progress->total_questions_answered, 1)) * 100;
+        $progress->last_attended = now();
+        $progress->updateGrade();
+        $progress->save();
+
+        // Update lesson streak
+        if ($this->last_lesson_date && $this->last_lesson_date->isYesterday()) {
+            $this->lesson_streak++;
+        } elseif (!$this->last_lesson_date || !$this->last_lesson_date->isToday()) {
+            $this->lesson_streak = 1;
+        }
+        $this->last_lesson_date = today();
+
+        // Award streak bonus
+        if ($this->lesson_streak % 7 == 0) {
+            $this->perk_points++;
+            $this->total_perk_points_earned++;
+        }
+
+        $this->total_lessons_attended++;
+        $this->save();
+
+        // Award house points if user has a house
+        if ($this->team) {
+            $house = \App\Models\Team::find($this->team);
+            if ($house) {
+                $house->increment('points', $pointsEarned);
+            }
+        }
+
+        // Notify user
+        $this->notify(
+            'lesson_completed',
+            'Lezione Completata!',
+            "Hai completato la lezione di {$lesson->subject->name} con performance {$attendance->performanceLabel}!",
+            'fa-graduation-cap',
+            '/lessons',
+            [
+                'exp_earned' => $expEarned,
+                'points_earned' => $pointsEarned,
+                'subject_leveled_up' => $leveledUp
+            ]
+        );
+
+        return $attendance;
+    }
+
+    /**
+     * Get user's perks.
+     */
+    public function perks()
+    {
+        return $this->belongsToMany(Perk::class, 'user_perks')
+            ->withPivot('rank', 'is_equipped', 'unlocked_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get equipped perks.
+     */
+    public function equippedPerks()
+    {
+        return $this->perks()->wherePivot('is_equipped', true);
+    }
+
+    /**
+     * Check if user has a perk.
+     */
+    public function hasPerk(Perk $perk)
+    {
+        return $this->perks()->where('perk_id', $perk->id)->exists();
+    }
+
+    /**
+     * Unlock a perk.
+     */
+    public function unlockPerk(Perk $perk)
+    {
+        if ($this->hasPerk($perk)) {
+            return false;
+        }
+
+        if (!$perk->canBeUnlockedBy($this)) {
+            return false;
+        }
+
+        // Deduct perk points
+        $this->perk_points -= $perk->perk_points_cost;
+        $this->save();
+
+        // Unlock perk
+        $this->perks()->attach($perk->id, [
+            'rank' => 1,
+            'is_equipped' => true,
+            'unlocked_at' => now(),
+        ]);
+
+        // Apply perk effects
+        $this->applyPerkEffects($perk);
+
+        // Notify user
+        $this->notify(
+            'perk_unlocked',
+            'Nuovo Talento Sbloccato!',
+            "Hai sbloccato il talento: {$perk->name}!",
+            'fa-star',
+            '/perks',
+            ['perk_id' => $perk->id]
+        );
+
+        return true;
+    }
+
+    /**
+     * Apply perk effects to user.
+     */
+    protected function applyPerkEffects(Perk $perk)
+    {
+        $effects = $perk->effects;
+
+        // Apply stat bonuses
+        if (isset($effects['stat_bonuses'])) {
+            foreach ($effects['stat_bonuses'] as $stat => $bonus) {
+                if (in_array($stat, ['strength', 'intelligence', 'dexterity', 'charisma', 'defense', 'magic_power'])) {
+                    $this->$stat += $bonus;
+                }
+            }
+            $this->save();
+        }
+
+        // Apply health/mana bonuses
+        if (isset($effects['max_health'])) {
+            $this->max_health += $effects['max_health'];
+            $this->current_health = min($this->current_health + $effects['max_health'], $this->max_health);
+        }
+        if (isset($effects['max_mana'])) {
+            $this->max_mana += $effects['max_mana'];
+            $this->current_mana = min($this->current_mana + $effects['max_mana'], $this->max_mana);
+        }
+
+        $this->save();
+    }
+
+    /**
+     * Get total stats including clothing and perks.
+     */
+    public function getTotalStats()
+    {
+        $baseStats = [
+            'strength' => $this->strength,
+            'intelligence' => $this->intelligence,
+            'dexterity' => $this->dexterity,
+            'charisma' => $this->charisma,
+            'defense' => $this->defense,
+            'magic_power' => $this->magic_power,
+        ];
+
+        // Add clothing bonuses
+        $clothingStats = $this->getClothingStats();
+
+        return [
+            'strength' => $baseStats['strength'] + $clothingStats['strength'],
+            'intelligence' => $baseStats['intelligence'] + $clothingStats['intelligence'],
+            'dexterity' => $baseStats['dexterity'] + $clothingStats['dexterity'],
+            'charisma' => $baseStats['charisma'] + $clothingStats['charisma'],
+            'defense' => $baseStats['defense'] + $clothingStats['defense'],
+            'magic_power' => $baseStats['magic_power'] + $clothingStats['magic'],
+        ];
+    }
+
+    /**
+     * Take damage.
+     */
+    public function takeDamage($amount)
+    {
+        $this->current_health = max(0, $this->current_health - $amount);
+        $this->save();
+
+        return $this->current_health;
+    }
+
+    /**
+     * Heal.
+     */
+    public function heal($amount, $source = 'potion')
+    {
+        $oldHealth = $this->current_health;
+        $this->current_health = min($this->max_health, $this->current_health + $amount);
+        $actualHealing = $this->current_health - $oldHealth;
+        $this->save();
+
+        if ($actualHealing > 0) {
+            \App\Models\HealthRegenerationLog::create([
+                'user_id' => $this->id,
+                'type' => 'health',
+                'amount' => $actualHealing,
+                'source' => $source,
+            ]);
+        }
+
+        return $actualHealing;
+    }
+
+    /**
+     * Use mana.
+     */
+    public function useMana($amount)
+    {
+        if ($this->current_mana < $amount) {
+            return false;
+        }
+
+        $this->current_mana -= $amount;
+        $this->save();
+
+        return true;
+    }
+
+    /**
+     * Restore mana.
+     */
+    public function restoreMana($amount, $source = 'rest')
+    {
+        $oldMana = $this->current_mana;
+        $this->current_mana = min($this->max_mana, $this->current_mana + $amount);
+        $actualRestored = $this->current_mana - $oldMana;
+        $this->save();
+
+        if ($actualRestored > 0) {
+            \App\Models\HealthRegenerationLog::create([
+                'user_id' => $this->id,
+                'type' => 'mana',
+                'amount' => $actualRestored,
+                'source' => $source,
+            ]);
+        }
+
+        return $actualRestored;
+    }
+
 }
