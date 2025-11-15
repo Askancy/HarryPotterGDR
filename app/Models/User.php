@@ -317,4 +317,193 @@ class User extends Authenticatable
             ->delete();
     }
 
+    // ==================== SCHOOL SYSTEM RELATIONSHIPS ====================
+
+    /**
+     * Get current school year.
+     */
+    public function currentSchoolYear()
+    {
+        return $this->belongsTo(SchoolYear::class, 'current_school_year_id');
+    }
+
+    /**
+     * Get class enrollments.
+     */
+    public function classEnrollments()
+    {
+        return $this->hasMany(ClassEnrollment::class);
+    }
+
+    /**
+     * Get enrolled classes.
+     */
+    public function enrolledClasses()
+    {
+        return $this->belongsToMany(SchoolClass::class, 'class_enrollments')
+            ->withPivot('status', 'enrollment_date', 'attendance_count', 'absence_count')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get grades.
+     */
+    public function grades()
+    {
+        return $this->hasMany(Grade::class);
+    }
+
+    /**
+     * Get yearly performances.
+     */
+    public function yearlyPerformances()
+    {
+        return $this->hasMany(YearlyPerformance::class);
+    }
+
+    /**
+     * Get current year performance.
+     */
+    public function currentYearPerformance()
+    {
+        return $this->hasOne(YearlyPerformance::class)
+            ->where('school_year_id', $this->current_school_year_id)
+            ->latest();
+    }
+
+    /**
+     * Get event participations.
+     */
+    public function eventParticipations()
+    {
+        return $this->hasMany(EventParticipation::class);
+    }
+
+    // ==================== ECONOMY SYSTEM RELATIONSHIPS ====================
+
+    /**
+     * Get user's wallet.
+     */
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    /**
+     * Get transactions.
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Get job completions.
+     */
+    public function jobCompletions()
+    {
+        return $this->hasMany(JobCompletion::class);
+    }
+
+    /**
+     * Get shop purchases.
+     */
+    public function shopPurchases()
+    {
+        return $this->hasMany(ShopPurchase::class, 'buyer_id');
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Add money to user (economy system).
+     */
+    public function addMoney(float $amount, ?string $description = null)
+    {
+        $wallet = Wallet::getOrCreateForUser($this);
+        $wallet->addMoney($amount);
+
+        if ($description) {
+            Transaction::log($this, 'admin_adjustment', $amount, $description);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Subtract money from user (economy system).
+     */
+    public function subtractMoney(float $amount, ?string $description = null): bool
+    {
+        $wallet = Wallet::getOrCreateForUser($this);
+
+        if (!$wallet->subtractMoney($amount)) {
+            return false;
+        }
+
+        if ($description) {
+            Transaction::log($this, 'admin_adjustment', -$amount, $description);
+        }
+
+        return true;
+    }
+
+    /**
+     * Get skill level by name.
+     */
+    public function getSkillLevel(string $skillName): int
+    {
+        $skill = $this->skills()->where('name', $skillName)->first();
+        return $skill ? $skill->pivot->level : 0;
+    }
+
+    /**
+     * Check if user can enroll in a class.
+     */
+    public function canEnrollInClass(SchoolClass $class): bool
+    {
+        // Check if already enrolled
+        if ($this->classEnrollments()
+            ->where('school_class_id', $class->id)
+            ->where('status', 'enrolled')
+            ->exists()) {
+            return false;
+        }
+
+        // Check grade level
+        if ($this->school_grade !== $class->grade_level) {
+            return false;
+        }
+
+        // Check if class is full
+        if ($class->isFull()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Enroll in multiple classes for the year.
+     */
+    public function enrollInYear(SchoolYear $schoolYear): void
+    {
+        // Get core subjects for this grade
+        $coreSubjects = Subject::where('is_core', true)
+            ->where('min_grade', '<=', $this->school_grade)
+            ->where('max_grade', '>=', $this->school_grade)
+            ->get();
+
+        foreach ($coreSubjects as $subject) {
+            $class = SchoolClass::where('subject_id', $subject->id)
+                ->where('school_year_id', $schoolYear->id)
+                ->where('grade_level', $this->school_grade)
+                ->first();
+
+            if ($class && !$class->isFull()) {
+                $class->enrollStudent($this);
+            }
+        }
+    }
+
 }
