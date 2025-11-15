@@ -90,6 +90,13 @@ Route::group(['prefix' => 'admin',  'middleware' => 'admin'], function(){
       Route::post('edit/{slug}', 'QuestController@postEdit');
   });
 
+  // House Points Admin
+  Route::group(array('prefix' => 'house-points', 'namespace' => 'Admin'), function() {
+      Route::get('/', 'HousePointsController@index')->name('admin.house-points');
+      Route::post('award', 'HousePointsController@award')->name('admin.house-points.award');
+      Route::post('bulk-award', 'HousePointsController@bulkAward')->name('admin.house-points.bulk-award');
+      Route::post('reset', 'HousePointsController@reset')->name('admin.house-points.reset');
+  });
 
 });
 
@@ -187,6 +194,16 @@ Route::group(['prefix' => 'api/house', 'middleware' => 'auth', 'namespace' => 'A
   Route::get('events', 'HouseApiController@getEvents');
   Route::post('events/{id}/join', 'HouseApiController@joinEvent');
   Route::get('stats', 'HouseApiController@getHouseStats');
+});
+
+// House Points Public Routes
+Route::get('house-points', 'PublicHousePointsController@index')->name('house-points.public');
+
+// House Points API
+Route::group(['prefix' => 'api/house-points'], function(){
+  Route::get('ranking', 'HousePointsController@getRanking');
+  Route::get('activity', 'HousePointsController@getRecentActivity');
+  Route::get('stats/{houseId}', 'HousePointsController@getHouseStats');
 });
 
 //ajax

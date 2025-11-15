@@ -67,9 +67,9 @@
     </div>
 
     <!-- Gestione Casate -->
-    <div x-data="{ open: {{ request()->is('admin/team*') || request()->is('admin/point*') ? 'true' : 'false' }} }">
+    <div x-data="{ open: {{ request()->is('admin/team*') || request()->is('admin/point*') || request()->is('admin/house-points*') ? 'true' : 'false' }} }">
         <button @click="open = !open"
-                class="{{ request()->is('admin/team*') || request()->is('admin/point*') ? 'bg-white bg-opacity-20 text-white' : 'text-gray-300 hover:bg-white hover:bg-opacity-10 hover:text-white' }} group w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors">
+                class="{{ request()->is('admin/team*') || request()->is('admin/point*') || request()->is('admin/house-points*') ? 'bg-white bg-opacity-20 text-white' : 'text-gray-300 hover:bg-white hover:bg-opacity-10 hover:text-white' }} group w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors">
             <div class="flex items-center">
                 <i class="fas fa-flag mr-3 text-lg w-6"></i>
                 Casate
@@ -77,9 +77,13 @@
             <i class="fas fa-chevron-down transition-transform" :class="open ? 'rotate-180' : ''"></i>
         </button>
         <div x-show="open" x-cloak class="ml-8 mt-1 space-y-1">
+            <a href="{{ route('admin.house-points') }}"
+               class="{{ request()->routeIs('admin.house-points*') ? 'text-white bg-opacity-10' : 'text-gray-400 hover:text-white' }} block px-3 py-2 text-sm rounded-md">
+                <i class="fas fa-trophy mr-2"></i> Punti Case
+            </a>
             <a href="{{ route('admin.point.index') }}"
                class="{{ request()->routeIs('admin.point.index') ? 'text-white bg-opacity-10' : 'text-gray-400 hover:text-white' }} block px-3 py-2 text-sm rounded-md">
-                <i class="fas fa-star mr-2"></i> Gestione punti
+                <i class="fas fa-star mr-2"></i> Gestione punti (Legacy)
             </a>
         </div>
     </div>
