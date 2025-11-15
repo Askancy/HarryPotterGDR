@@ -317,4 +317,263 @@ class User extends Authenticatable
             ->delete();
     }
 
+    /**
+     * Get user's clothing inventory.
+     */
+    public function clothing()
+    {
+        return $this->belongsToMany(Clothing::class, 'user_clothing')
+            ->withPivot('quantity', 'acquired_at')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get equipped clothing.
+     */
+    public function equippedClothing()
+    {
+        return $this->hasMany(EquippedClothing::class);
+    }
+
+    /**
+     * Get clothing in a specific slot.
+     */
+    public function getEquippedInSlot($slot)
+    {
+        return $this->equippedClothing()->where('slot', $slot)->first();
+    }
+
+    /**
+     * Equip clothing item.
+     */
+    public function equipClothing(Clothing $clothing)
+    {
+        // Check if user owns this clothing
+        $hasClothing = $this->clothing()->where('clothing_id', $clothing->id)->exists();
+        if (!$hasClothing) {
+            return false;
+        }
+
+        // Check if user can wear it
+        if (!$clothing->canBeWornBy($this)) {
+            return false;
+        }
+
+        // Unequip current item in this slot if exists
+        $this->equippedClothing()->where('slot', $clothing->type)->delete();
+
+        // Equip new item
+        $this->equippedClothing()->create([
+            'slot' => $clothing->type,
+            'clothing_id' => $clothing->id,
+            'equipped_at' => now(),
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Unequip clothing from slot.
+     */
+    public function unequipSlot($slot)
+    {
+        return $this->equippedClothing()->where('slot', $slot)->delete();
+    }
+
+    /**
+     * Get total stats from equipped clothing.
+     */
+    public function getClothingStats()
+    {
+        $equipped = $this->equippedClothing()->with('clothing')->get();
+
+        $stats = [
+            'strength' => 0,
+            'intelligence' => 0,
+            'dexterity' => 0,
+            'charisma' => 0,
+            'defense' => 0,
+            'magic' => 0,
+        ];
+
+        foreach ($equipped as $item) {
+            $stats['strength'] += $item->clothing->strength_bonus;
+            $stats['intelligence'] += $item->clothing->intelligence_bonus;
+            $stats['dexterity'] += $item->clothing->dexterity_bonus;
+            $stats['charisma'] += $item->clothing->charisma_bonus;
+            $stats['defense'] += $item->clothing->defense_bonus;
+            $stats['magic'] += $item->clothing->magic_bonus;
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Get friendships where user is the sender.
+     */
+    public function sentFriendRequests()
+    {
+        return $this->hasMany(Friendship::class, 'user_id');
+    }
+
+    /**
+     * Get friendships where user is the receiver.
+     */
+    public function receivedFriendRequests()
+    {
+        return $this->hasMany(Friendship::class, 'friend_id');
+    }
+
+    /**
+     * Get all friends (accepted friendships).
+     */
+    public function friends()
+    {
+        $sentFriends = $this->sentFriendRequests()
+            ->accepted()
+            ->with('friend')
+            ->get()
+            ->pluck('friend');
+
+        $receivedFriends = $this->receivedFriendRequests()
+            ->accepted()
+            ->with('user')
+            ->get()
+            ->pluck('user');
+
+        return $sentFriends->merge($receivedFriends);
+    }
+
+    /**
+     * Get pending friend requests received.
+     */
+    public function pendingFriendRequests()
+    {
+        return $this->receivedFriendRequests()
+            ->pending()
+            ->with('user')
+            ->get();
+    }
+
+    /**
+     * Send friend request.
+     */
+    public function sendFriendRequest(User $user)
+    {
+        // Check if already friends or request exists
+        $existing = Friendship::where(function ($q) use ($user) {
+            $q->where('user_id', $this->id)->where('friend_id', $user->id);
+        })->orWhere(function ($q) use ($user) {
+            $q->where('user_id', $user->id)->where('friend_id', $this->id);
+        })->first();
+
+        if ($existing) {
+            return false;
+        }
+
+        $friendship = Friendship::create([
+            'user_id' => $this->id,
+            'friend_id' => $user->id,
+            'status' => 'pending',
+            'requested_at' => now(),
+        ]);
+
+        // Notify the other user
+        $user->notify(
+            'friend_request',
+            'Nuova Richiesta di Amicizia',
+            "{$this->username} ti ha inviato una richiesta di amicizia!",
+            'fa-user-plus',
+            '/friends',
+            ['friendship_id' => $friendship->id]
+        );
+
+        return $friendship;
+    }
+
+    /**
+     * Check if users are friends.
+     */
+    public function isFriendsWith(User $user)
+    {
+        return Friendship::where(function ($q) use ($user) {
+            $q->where('user_id', $this->id)->where('friend_id', $user->id);
+        })->orWhere(function ($q) use ($user) {
+            $q->where('user_id', $user->id)->where('friend_id', $this->id);
+        })->where('status', 'accepted')->exists();
+    }
+
+    /**
+     * Get sent messages.
+     */
+    public function sentMessages()
+    {
+        return $this->hasMany(PrivateMessage::class, 'sender_id');
+    }
+
+    /**
+     * Get received messages.
+     */
+    public function receivedMessages()
+    {
+        return $this->hasMany(PrivateMessage::class, 'receiver_id');
+    }
+
+    /**
+     * Get unread messages count.
+     */
+    public function unreadMessagesCount()
+    {
+        return $this->receivedMessages()->unread()->count();
+    }
+
+    /**
+     * Get conversations.
+     */
+    public function conversations()
+    {
+        return Conversation::where('user_one_id', $this->id)
+            ->orWhere('user_two_id', $this->id)
+            ->orderBy('last_message_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Send private message.
+     */
+    public function sendMessage(User $receiver, $message)
+    {
+        // Create or update conversation
+        $conversation = Conversation::findOrCreate($this->id, $receiver->id);
+        $conversation->last_message_at = now();
+        $conversation->save();
+
+        // Create message
+        $privateMessage = PrivateMessage::create([
+            'sender_id' => $this->id,
+            'receiver_id' => $receiver->id,
+            'message' => $message,
+        ]);
+
+        // Notify receiver
+        $receiver->notify(
+            'private_message',
+            'Nuovo Messaggio Privato',
+            "{$this->username} ti ha inviato un messaggio!",
+            'fa-envelope',
+            '/messages/' . $conversation->id,
+            ['message_id' => $privateMessage->id]
+        );
+
+        return $privateMessage;
+    }
+
+    /**
+     * Increment profile views.
+     */
+    public function incrementProfileViews()
+    {
+        $this->increment('profile_views');
+    }
+
 }

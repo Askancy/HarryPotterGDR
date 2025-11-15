@@ -297,3 +297,38 @@ Route::group(['prefix' => 'events', 'middleware' => 'auth'], function(){
   Route::post('{id}/invite', 'RandomEventController@inviteUser')->name('events.invite');
   Route::post('{id}/join', 'RandomEventController@join')->name('events.join');
 });
+
+// Public Profile Routes
+Route::get('/user/{slug}', 'ProfileController@show')->name('user.profile');
+
+// Profile Settings Routes
+Route::group(['prefix' => 'profile-settings', 'middleware' => 'auth'], function(){
+  Route::get('/', 'ProfileController@settings')->name('profile.settings');
+  Route::post('/', 'ProfileController@updateSettings')->name('profile.update-settings');
+});
+
+// Clothing Routes
+Route::group(['prefix' => 'clothing', 'middleware' => 'auth'], function(){
+  Route::get('/', 'ClothingController@index')->name('clothing.index');
+  Route::get('/shop', 'ClothingController@shop')->name('clothing.shop');
+  Route::post('/equip', 'ClothingController@equip')->name('clothing.equip');
+  Route::post('/unequip', 'ClothingController@unequip')->name('clothing.unequip');
+  Route::post('/purchase', 'ClothingController@purchase')->name('clothing.purchase');
+});
+
+// Friendship Routes
+Route::group(['prefix' => 'friends', 'middleware' => 'auth'], function(){
+  Route::get('/', 'FriendshipController@index')->name('friends.index');
+  Route::post('/send-request', 'FriendshipController@sendRequest')->name('friends.send-request');
+  Route::post('/{friendshipId}/accept', 'FriendshipController@acceptRequest')->name('friends.accept');
+  Route::post('/{friendshipId}/decline', 'FriendshipController@declineRequest')->name('friends.decline');
+  Route::delete('/{userId}/remove', 'FriendshipController@removeFriend')->name('friends.remove');
+});
+
+// Messages Routes
+Route::group(['prefix' => 'messages', 'middleware' => 'auth'], function(){
+  Route::get('/', 'MessageController@index')->name('messages.index');
+  Route::get('/{conversationId}', 'MessageController@show')->name('messages.show');
+  Route::post('/send', 'MessageController@send')->name('messages.send');
+  Route::post('/mark-as-read', 'MessageController@markAsRead')->name('messages.mark-as-read');
+});
