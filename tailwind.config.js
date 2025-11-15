@@ -1,0 +1,70 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './resources/**/*.blade.php',
+    './resources/**/*.js',
+    './resources/**/*.vue',
+    './app/Http/Livewire/**/*.php',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        'gryffindor': {
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#dc2626',
+          600: '#b91c1c',
+          700: '#991b1b',
+          800: '#7f1d1d',
+          900: '#740a0a',
+        },
+        'slytherin': {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#1a5d1a',
+          600: '#166534',
+          700: '#14532d',
+          800: '#0f3b21',
+          900: '#052e16',
+        },
+        'ravenclaw': {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#1e40af',
+          600: '#1e3a8a',
+          700: '#1e3a8a',
+          800: '#1e3a8a',
+          900: '#172554',
+        },
+        'hufflepuff': {
+          50: '#fefce8',
+          100: '#fef9c3',
+          200: '#fef08a',
+          300: '#fde047',
+          400: '#facc15',
+          500: '#eab308',
+          600: '#ca8a04',
+          700: '#a16207',
+          800: '#854d0e',
+          900: '#713f12',
+        },
+      },
+      fontFamily: {
+        'harry': ['"Harry Potter"', 'cursive'],
+      },
+    },
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+  ],
+}

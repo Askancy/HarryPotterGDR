@@ -32,7 +32,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/';
+    protected $redirectTo = '/sorting-hat';
 
     /**
      * Create a new controller instance.
@@ -86,7 +86,8 @@ class RegisterController extends Controller
         $user->level = "1";
         $user->exp = "0";
         $user->money = "25";
-        $user->team = rand(1,4);
+        // Don't assign a team yet - will be assigned by Sorting Hat
+        // $user->team = rand(1,4);
         $user->save();
 
         $role = new Role();
