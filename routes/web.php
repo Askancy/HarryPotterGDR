@@ -167,6 +167,28 @@ Route::group(['prefix' => 'support'], function(){
 
 });
 
+//house system
+Route::group(['middleware' => 'auth'], function(){
+  // Sorting Hat
+  Route::get('sorting-hat', 'SortingHatController@show')->name('sorting-hat.show');
+  Route::post('sorting-hat/assign', 'SortingHatController@assign')->name('sorting-hat.assign');
+
+  // House Common Room
+  Route::get('house/common-room', 'SortingHatController@commonRoom')->name('house.common-room');
+});
+
+// House API routes
+Route::group(['prefix' => 'api/house', 'middleware' => 'auth', 'namespace' => 'Api'], function(){
+  Route::get('messages', 'HouseApiController@getMessages');
+  Route::get('messages/new', 'HouseApiController@getNewMessages');
+  Route::post('messages', 'HouseApiController@sendMessage');
+  Route::get('members', 'HouseApiController@getMembers');
+  Route::get('announcements', 'HouseApiController@getAnnouncements');
+  Route::get('events', 'HouseApiController@getEvents');
+  Route::post('events/{id}/join', 'HouseApiController@joinEvent');
+  Route::get('stats', 'HouseApiController@getHouseStats');
+});
+
 //ajax
 Route::group(['prefix' => 'ajax'], function(){
   //Route::get('sendMessage', 'CommentController@postComment');
