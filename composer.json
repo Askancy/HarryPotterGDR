@@ -8,9 +8,9 @@
         "php": "^8.2",
         "arrilot/laravel-widgets": "^3.14",
         "intervention/image": "^3.0",
+        "konekt/html": "^6.7",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
-        "laravelcollective/html": "^6.4",
         "livewire/livewire": "^3.5"
     },
     "require-dev": {
