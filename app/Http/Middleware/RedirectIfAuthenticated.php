@@ -18,7 +18,15 @@ class RedirectIfAuthenticated
     public function handle($request, Closure $next, $guard = null)
     {
         if (Auth::guard($guard)->check()) {
-            return redirect('/');
+            $user = Auth::user();
+
+            // Se l'utente non ha ancora una casa, portalo allo smistamento
+            if (!$user->team) {
+                return redirect()->route('sorting-hat.show');
+            }
+
+            // Altrimenti portalo alla sala comune della sua casa
+            return redirect()->route('house.common-room');
         }
 
         return $next($request);
