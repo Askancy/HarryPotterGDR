@@ -98,6 +98,46 @@ Route::group(['prefix' => 'admin',  'middleware' => 'admin'], function(){
       Route::post('reset', 'HousePointsController@reset')->name('admin.house-points.reset');
   });
 
+  // Locations Admin
+  Route::group(array('prefix' => 'locations', 'namespace' => 'Admin'), function() {
+      Route::get('/', 'LocationAdminController@index')->name('admin.locations.index');
+      Route::get('create', 'LocationAdminController@create')->name('admin.locations.create');
+      Route::post('/', 'LocationAdminController@store')->name('admin.locations.store');
+      Route::get('{id}/edit', 'LocationAdminController@edit')->name('admin.locations.edit');
+      Route::put('{id}', 'LocationAdminController@update')->name('admin.locations.update');
+      Route::delete('{id}', 'LocationAdminController@destroy')->name('admin.locations.destroy');
+  });
+
+  // Shops Admin
+  Route::group(array('prefix' => 'location-shops', 'namespace' => 'Admin'), function() {
+      Route::get('/', 'LocationShopAdminController@index')->name('admin.shops.index');
+      Route::get('create', 'LocationShopAdminController@create')->name('admin.shops.create');
+      Route::post('/', 'LocationShopAdminController@store')->name('admin.shops.store');
+      Route::get('{id}/edit', 'LocationShopAdminController@edit')->name('admin.shops.edit');
+      Route::put('{id}', 'LocationShopAdminController@update')->name('admin.shops.update');
+      Route::delete('{id}', 'LocationShopAdminController@destroy')->name('admin.shops.destroy');
+  });
+
+  // Random Events Admin
+  Route::group(array('prefix' => 'random-events', 'namespace' => 'Admin'), function() {
+      Route::get('/', 'RandomEventAdminController@index')->name('admin.events.index');
+      Route::get('create', 'RandomEventAdminController@create')->name('admin.events.create');
+      Route::post('/', 'RandomEventAdminController@store')->name('admin.events.store');
+      Route::get('{id}/edit', 'RandomEventAdminController@edit')->name('admin.events.edit');
+      Route::put('{id}', 'RandomEventAdminController@update')->name('admin.events.update');
+      Route::delete('{id}', 'RandomEventAdminController@destroy')->name('admin.events.destroy');
+  });
+
+  // Skills Admin
+  Route::group(array('prefix' => 'skills', 'namespace' => 'Admin'), function() {
+      Route::get('/', 'SkillAdminController@index')->name('admin.skills.index');
+      Route::get('create', 'SkillAdminController@create')->name('admin.skills.create');
+      Route::post('/', 'SkillAdminController@store')->name('admin.skills.store');
+      Route::get('{id}/edit', 'SkillAdminController@edit')->name('admin.skills.edit');
+      Route::put('{id}', 'SkillAdminController@update')->name('admin.skills.update');
+      Route::delete('{id}', 'SkillAdminController@destroy')->name('admin.skills.destroy');
+  });
+
 });
 
 // Auth::routes(); // Commented out - requires laravel/ui package
@@ -213,4 +253,47 @@ Route::group(['prefix' => 'api/house-points'], function(){
 Route::group(['prefix' => 'ajax'], function(){
   //Route::get('sendMessage', 'CommentController@postComment');
   Route::get('deletePost', 'ForumController@getDeletePost');
+});
+
+// Locations Routes
+Route::group(['prefix' => 'locations', 'middleware' => 'auth'], function(){
+  Route::get('/', 'LocationController@index')->name('locations.index');
+  Route::get('{slug}', 'LocationController@show')->name('locations.show');
+  Route::post('{slug}/travel', 'LocationController@travel')->name('locations.travel');
+});
+
+// Shops Routes
+Route::group(['prefix' => 'shops', 'middleware' => 'auth'], function(){
+  Route::get('{slug}', 'LocationShopController@show')->name('shops.show');
+  Route::post('{slug}/purchase', 'LocationShopController@purchase')->name('shops.purchase');
+  Route::post('{slug}/purchase-shop', 'LocationShopController@purchaseShop')->name('shops.purchase-shop');
+});
+
+// Inn Routes
+Route::group(['prefix' => 'inns', 'middleware' => 'auth'], function(){
+  Route::get('{slug}', 'InnController@show')->name('inns.show');
+  Route::post('{slug}/leave', 'InnController@leave')->name('inns.leave');
+  Route::post('{slug}/trigger-event', 'InnController@triggerEvent')->name('inns.trigger-event');
+});
+
+// Notifications Routes
+Route::group(['prefix' => 'notifications', 'middleware' => 'auth'], function(){
+  Route::get('/', 'NotificationController@index')->name('notifications.index');
+  Route::post('{id}/read', 'NotificationController@markAsRead')->name('notifications.read');
+  Route::post('mark-all-read', 'NotificationController@markAllAsRead')->name('notifications.mark-all-read');
+  Route::get('unread-count', 'NotificationController@unreadCount')->name('notifications.unread-count');
+});
+
+// Progression Routes
+Route::group(['prefix' => 'progression', 'middleware' => 'auth'], function(){
+  Route::get('/', 'ProgressionController@index')->name('progression.index');
+  Route::post('allocate-skill', 'ProgressionController@allocateSkillPoint')->name('progression.allocate-skill');
+});
+
+// Random Events Routes
+Route::group(['prefix' => 'events', 'middleware' => 'auth'], function(){
+  Route::get('{id}', 'RandomEventController@show')->name('events.show');
+  Route::post('{id}/choice', 'RandomEventController@makeChoice')->name('events.choice');
+  Route::post('{id}/invite', 'RandomEventController@inviteUser')->name('events.invite');
+  Route::post('{id}/join', 'RandomEventController@join')->name('events.join');
 });
