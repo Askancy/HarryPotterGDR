@@ -901,4 +901,88 @@ class User extends Authenticatable
         return $actualRestored;
     }
 
+    /**
+     * Get duels where user is the challenger.
+     */
+    public function challengedDuels()
+    {
+        return $this->hasMany(Duel::class, 'challenger_id');
+    }
+
+    /**
+     * Get duels where user is the opponent.
+     */
+    public function opponentDuels()
+    {
+        return $this->hasMany(Duel::class, 'opponent_id');
+    }
+
+    /**
+     * Get all duels (challenged + opponent).
+     */
+    public function duels()
+    {
+        return Duel::forUser($this->id)->with(['challenger', 'opponent', 'winner', 'location']);
+    }
+
+    /**
+     * Get active duel for user.
+     */
+    public function activeDuel()
+    {
+        return Duel::forUser($this->id)->where('status', 'active')->first();
+    }
+
+    /**
+     * Get pending duel invitations for user.
+     */
+    public function pendingDuelInvitations()
+    {
+        return $this->hasMany(Duel::class, 'opponent_id')->where('status', 'pending');
+    }
+
+    /**
+     * Get duel statistics.
+     */
+    public function duelStatistic()
+    {
+        return $this->hasOne(DuelStatistic::class);
+    }
+
+    /**
+     * Get or create duel statistics.
+     */
+    public function getOrCreateDuelStatistics()
+    {
+        return DuelStatistic::firstOrCreate(
+            ['user_id' => $this->id],
+            [
+                'ranking_points' => 1000,
+                'total_duels' => 0,
+                'duels_won' => 0,
+                'duels_lost' => 0,
+            ]
+        );
+    }
+
+    /**
+     * Check if user can duel.
+     */
+    public function canDuel()
+    {
+        // Must have at least 50% health and mana
+        $minHealth = $this->max_health * 0.5;
+        $minMana = $this->max_mana * 0.5;
+
+        return $this->current_health >= $minHealth && $this->current_mana >= $minMana;
+    }
+
+    /**
+     * Check if user is currently in a duel.
+     */
+    public function isInDuel()
+    {
+        return $this->activeDuel() !== null;
+    }
+
 }

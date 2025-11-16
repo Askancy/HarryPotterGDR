@@ -348,3 +348,18 @@ Route::group(['prefix' => 'perks', 'middleware' => 'auth'], function(){
   Route::post('/{id}/unlock', 'PerkController@unlock')->name('perks.unlock');
   Route::post('/{id}/toggle', 'PerkController@toggle')->name('perks.toggle');
 });
+
+// Duels Routes
+Route::group(['prefix' => 'duels', 'middleware' => 'auth'], function(){
+  Route::get('/', 'DuelController@index')->name('duels.index');
+  Route::get('/create', 'DuelController@create')->name('duels.create');
+  Route::post('/', 'DuelController@store')->name('duels.store');
+  Route::get('/leaderboard', 'DuelController@leaderboard')->name('duels.leaderboard');
+  Route::get('/statistics', 'DuelController@statistics')->name('duels.statistics');
+  Route::get('/{id}', 'DuelController@show')->name('duels.show');
+  Route::post('/{id}/accept', 'DuelController@accept')->name('duels.accept');
+  Route::post('/{id}/decline', 'DuelController@decline')->name('duels.decline');
+  Route::post('/{id}/cast-spell', 'DuelController@castSpell')->name('duels.cast-spell');
+  Route::post('/{id}/defend', 'DuelController@defend')->name('duels.defend');
+  Route::post('/{id}/flee', 'DuelController@flee')->name('duels.flee');
+});
