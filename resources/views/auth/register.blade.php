@@ -1,124 +1,210 @@
-        <form method="POST" action="{{ route('register') }}" aria-label="{{ __('Register') }}">
-          @csrf
+@extends('front.layouts.app')
 
-          <div class="form-group row">
-            <label for="username" class="col-md-4 col-form-label text-md-right">{{ __('Username') }}</label>
+@section('title', 'Registrati')
 
-            <div class="col-md-6">
-              <input id="username" type="text" class="form-control{{ $errors->has('username') ? ' is-invalid' : '' }}" name="username" value="{{ old('username') }}" required autofocus>
+@section('styles')
+<style>
+.register-container {
+    max-width: 700px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+.register-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.register-header h2 {
+    color: #2c3e50;
+    font-weight: bold;
+}
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+}
+.section-divider {
+    margin: 25px 0;
+    border-top: 2px solid #e9ecef;
+}
+.info-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-left: 4px solid #007bff;
+    margin-bottom: 20px;
+}
+</style>
+@endsection
 
-              @if ($errors->has('username'))
-              <span class="invalid-feedback" role="alert">
-                <strong>{{ $errors->first('username') }}</strong>
-              </span>
-              @endif
+@section('content')
+<div class="container">
+    <div class="register-container">
+        <div class="register-header">
+            <h2>Benvenuto a Hogwarts</h2>
+            <p class="text-muted">Compila il modulo per iscriverti alla scuola di magia</p>
+        </div>
+
+        <div class="info-box">
+            <strong>Nota:</strong> Il Cappello Parlante determinerà la tua casa dopo la registrazione!
+        </div>
+
+        <form method="POST" action="{{ route('register') }}">
+            @csrf
+
+            <!-- Account Information -->
+            <h5 class="mb-3">Informazioni Account</h5>
+
+            <div class="form-group">
+                <label for="username">Username <span class="text-danger">*</span></label>
+                <input id="username" type="text"
+                       class="form-control @error('username') is-invalid @enderror"
+                       name="username"
+                       value="{{ old('username') }}"
+                       required
+                       autofocus>
+                @error('username')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
             </div>
-          </div>
 
-          <hr>
-
-          <div class="form-group row">
-            <label for="name" class="col-md-4 col-form-label text-md-right">{{ __('Nome') }}</label>
-
-            <div class="col-md-6">
-              <input id="name" type="text" class="form-control{{ $errors->has('name') ? ' is-invalid' : '' }}" name="name" value="{{ old('username') }}" required autofocus>
-
-              @if ($errors->has('name'))
-              <span class="invalid-feedback" role="alert">
-                <strong>{{ $errors->first('name') }}</strong>
-            </span>
-              @endif
+            <div class="form-group">
+                <label for="email">Email <span class="text-danger">*</span></label>
+                <input id="email" type="email"
+                       class="form-control @error('email') is-invalid @enderror"
+                       name="email"
+                       value="{{ old('email') }}"
+                       required>
+                @error('email')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
             </div>
-          </div>
 
-          <div class="form-group row">
-            <label for="surname" class="col-md-4 col-form-label text-md-right">{{ __('Cognome') }}</label>
-
-            <div class="col-md-6">
-              <input id="surname" type="text" class="form-control{{ $errors->has('surname') ? ' is-invalid' : '' }}" name="surname" value="{{ old('surname') }}" required autofocus>
-
-              @if ($errors->has('surname'))
-              <span class="invalid-feedback" role="alert">
-                <strong>{{ $errors->first('surname') }}</strong>
-            </span>
-              @endif
+            <div class="form-group">
+                <label for="password">Password <span class="text-danger">*</span></label>
+                <input id="password" type="password"
+                       class="form-control @error('password') is-invalid @enderror"
+                       name="password"
+                       required>
+                <small class="form-text text-muted">Minimo 6 caratteri</small>
+                @error('password')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
             </div>
-          </div>
 
-          <div class="form-group row">
-
-            <label for="surname" class="col-md-4 col-form-label text-md-right">{{ __('Sesso') }}</label>
-            <div class="col-md-6">
-              <select name="sex" class="form-control">
-                  <option value="1" selected> Maschio </option>
-                  <option value="2"> Femmina </option>
-                </select>
-              @if ($errors->has('sex'))
-              <span class="invalid-feedback" role="alert">
-              <strong>{{ $errors->first('sex') }}</strong>
-          </span>
-              @endif
+            <div class="form-group">
+                <label for="password-confirm">Conferma Password <span class="text-danger">*</span></label>
+                <input id="password-confirm" type="password"
+                       class="form-control"
+                       name="password_confirmation"
+                       required>
             </div>
-          </div>
 
-          <div class="form-group row {{ $errors->has('birthday') ? 'has-error' : '' }}">
-            {!! Form::label('birthday', 'Data di nascita', ['class' => 'col-md-4 col-form-label text-md-right']) !!}
-            <div class="col-md-8">
-              <div class="form-inline">
-                <input id="datepicker" class="form-control" name="birthday" />
-                <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/gijgo@1.9.9/js/gijgo.min.js"></script>
-                <script>
-                  $('#datepicker').datepicker({
-                    uiLibrary: 'bootstrap4',
-                    format: 'yyyy-mm-dd'
-                  });
-                </script>
-              </div>
-              {{ $errors->first('birthday', '<span class="help-block">:message</span>') }}
+            <div class="section-divider"></div>
+
+            <!-- Personal Information -->
+            <h5 class="mb-3">Informazioni Personali</h5>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="name">Nome <span class="text-danger">*</span></label>
+                        <input id="name" type="text"
+                               class="form-control @error('name') is-invalid @enderror"
+                               name="name"
+                               value="{{ old('name') }}"
+                               required>
+                        @error('name')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="surname">Cognome <span class="text-danger">*</span></label>
+                        <input id="surname" type="text"
+                               class="form-control @error('surname') is-invalid @enderror"
+                               name="surname"
+                               value="{{ old('surname') }}"
+                               required>
+                        @error('surname')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                </div>
             </div>
-          </div>
 
-          <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="sex">Sesso <span class="text-danger">*</span></label>
+                        <select name="sex" id="sex"
+                                class="form-control @error('sex') is-invalid @enderror"
+                                required>
+                            <option value="">Seleziona...</option>
+                            <option value="M" {{ old('sex') == 'M' ? 'selected' : '' }}>Maschio</option>
+                            <option value="F" {{ old('sex') == 'F' ? 'selected' : '' }}>Femmina</option>
+                        </select>
+                        @error('sex')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                </div>
 
-          <div class="form-group row">
-            <label for="email" class="col-md-4 col-form-label text-md-right">{{ __('Email') }}</label>
-            <div class="col-md-6">
-              <input id="email" type="email" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" required>
-              @if ($errors->has('email'))
-              <span class="invalid-feedback" role="alert">
-                <strong>{{ $errors->first('email') }}</strong>
-              </span>
-              @endif
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="birthday">Data di nascita <span class="text-danger">*</span></label>
+                        <input id="datepicker" type="text"
+                               class="form-control @error('birthday') is-invalid @enderror"
+                               name="birthday"
+                               value="{{ old('birthday') }}"
+                               placeholder="yyyy-mm-dd"
+                               required>
+                        @error('birthday')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                </div>
             </div>
-          </div>
 
-          <div class="form-group row">
-            <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
-
-            <div class="col-md-6">
-              <input id="password" type="password" class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" required>
-
-              @if ($errors->has('password'))
-              <span class="invalid-feedback" role="alert">
-                <strong>{{ $errors->first('password') }}</strong>
-              </span>
-              @endif
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary">
+                    Registrati e vai allo smistamento
+                </button>
             </div>
-          </div>
 
-          <div class="form-group row">
-            <label for="password-confirm" class="col-md-4 col-form-label text-md-right">{{ __('Conferma Password') }}</label>
+            <hr>
 
-            <div class="col-md-6">
-              <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required>
+            <div class="text-center">
+                <p>Hai già un account? <a href="{{ route('login') }}">Accedi qui</a></p>
             </div>
-          </div>
-
-          <p class="text-center">La casata del giocatore sarà scelta casualmente dal sistema di gioco</p>
-
-          <div class="form-group row mb-0">
-            <div class="col-md-6 offset-md-4">
-              <button type="submit" class="btn btn-dark">{{ __('Registrati') }}</button>
-            </div>
-          </div>
         </form>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/gijgo@1.9.9/js/gijgo.min.js"></script>
+<script>
+    $('#datepicker').datepicker({
+        uiLibrary: 'bootstrap4',
+        format: 'yyyy-mm-dd'
+    });
+</script>
+@endsection

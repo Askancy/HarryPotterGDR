@@ -1,55 +1,97 @@
-<form method="POST" action="{{ route('login') }}" aria-label="{{ __('Login') }}" id="loginStyle" class="justify-content-center">
-  <div class="col-12">
-    <h3>Accedi</h3>
-  </div>
+@extends('front.layouts.app')
 
-  @csrf
+@section('title', 'Accedi')
 
+@section('styles')
+<style>
+.login-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.login-header h2 {
+    color: #2c3e50;
+    font-weight: bold;
+}
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+}
+</style>
+@endsection
 
-  <div class="form-group col-12">
-      <label for="email" class="col-md-4 col-form-label text-md-right">{{ __('Email') }}</label>
-
-      <div class="col-md-6">
-        <input id="email" type="email" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" required autofocus>
-        @if ($errors->has('email'))
-        <span class="invalid-feedback" role="alert">
-                  <strong>{{ $errors->first('email') }}</strong>
-                </span>
-        @endif
+@section('content')
+<div class="container">
+    <div class="login-container">
+        <div class="login-header">
+            <h2>Accedi a Hogwarts</h2>
+            <p class="text-muted">Inserisci le tue credenziali per accedere</p>
         </div>
-  </div>
 
-  <div class="form-group col-12">
-    <label for="email" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
 
-    <div class="col-md-6">
-      <input id="password" type="password" class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" value="{{ old('Password') }}" required autofocus>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" type="email"
+                       class="form-control @error('email') is-invalid @enderror"
+                       name="email"
+                       value="{{ old('email') }}"
+                       required
+                       autofocus>
+                @error('email')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
 
-      @if ($errors->has('password'))
-      <span class="invalid-feedback" role="alert">
-                <strong>{{ $errors->first('password') }}</strong>
-              </span>
-      @endif
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" type="password"
+                       class="form-control @error('password') is-invalid @enderror"
+                       name="password"
+                       required>
+                @error('password')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                    <label class="form-check-label" for="remember">
+                        Ricordami
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    Accedi
+                </button>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="{{ route('password.request') }}">Password dimenticata?</a>
+            </div>
+
+            <hr>
+
+            <div class="text-center">
+                <p>Non hai un account? <a href="{{ route('register') }}">Registrati qui</a></p>
+            </div>
+        </form>
     </div>
-  </div>
-
-  <div class="col-md-5 offset-md-2">
-    <label for="remember" class="col-6">{{__('Ricordami')}}</label>
-    <input class="form-checkbox-input2" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }} />
-  </div>
-
-  <div class="col-md-6 offset-md-4">
-    <button type="submit" class="btn btn-dark">
-      {{ __('Accedi') }}
-    </button>
-  </div>
-
-  <hr>
-  <div class="col-md-7 offset-md-3">
-    <a class="btn btn-link" href="{{ route('password.request') }}">
-        {{ __('Password dimenticata?') }}
-    </a>
-  </div>
-
-
-</form>
+</div>
+@endsection

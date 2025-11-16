@@ -46,17 +46,46 @@ class HomeController extends Controller
 
     // Se sei nuovo vieni indirizzato davanti al cappello parlante
     public function getSortingHat(){
-      $sorting = PollQuestions::inRandomOrder()->paginate(3);
+      // Verifica che l'utente sia loggato
+      if (!Auth::check()) {
+        return redirect()->route('login')->with('alert-error', 'Devi effettuare il login per accedere al Cappello Parlante.');
+      }
+
+      // Se l'utente è già stato smistato, reindirizza alla home
+      if (Auth::user()->team) {
+        return redirect('/')->with('alert-info', 'Sei già stato smistato!');
+      }
+
+      $sorting = PollQuestions::inRandomOrder()->limit(10)->get();
       return view('front.pages.maps.sort', compact('sorting'));
     }
 
     public function postSortingHat(Request $request){
-      $points = 0;
-      for($p = 0; $p < count($request->input('question')); $p++){
-        $answer = PollAnswers::where('id_question',$request->input('question')[$p])->where('id',$request->input('answer')[$p])->first();
-        $points += $answer->value;
+      // Verifica che l'utente sia loggato
+      if (!Auth::check()) {
+        return redirect()->route('login')->with('alert-error', 'Devi effettuare il login per essere smistato.');
       }
-      $quests = count($request->input('question'));
+
+      // Verifica che l'utente non sia già stato smistato
+      if (Auth::user()->team) {
+        return redirect('/')->with('alert-error', 'Sei già stato smistato in una casa!');
+      }
+
+      $questions = $request->input('question', []);
+      $answers = $request->input('answer', []);
+
+      if (empty($questions) || empty($answers)) {
+        return redirect()->back()->with('alert-error', 'Devi rispondere a tutte le domande del Cappello Parlante.');
+      }
+
+      $points = 0;
+      for($p = 0; $p < count($questions); $p++){
+        $answer = PollAnswers::where('id_question',$questions[$p])->where('id',$answers[$p])->first();
+        if ($answer) {
+          $points += $answer->value;
+        }
+      }
+      $quests = count($questions);
       if($points <= $quests){
         $casa = "Grifondoro";
         $id_casa = 1;

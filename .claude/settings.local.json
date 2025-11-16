@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"storage/logs/laravel.log\")",
+      "Bash(php artisan tinker:*)",
+      "Bash(php artisan:*)",
+      "Bash(composer dump-autoload:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

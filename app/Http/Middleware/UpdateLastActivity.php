@@ -19,11 +19,12 @@ class UpdateLastActivity
     {
         if (Auth::check()) {
             // Update last activity timestamp every 2 minutes to avoid too many DB writes
-            $lastActivity = Auth::user()->last_activity;
+            $user = Auth::user();
+            $lastActivity = $user->last_activity;
 
             if (!$lastActivity || $lastActivity->diffInMinutes(now()) >= 2) {
                 DB::table('users')
-                    ->where('id', Auth::id())
+                    ->where('id', $user->id)
                     ->update(['last_activity' => now()]);
             }
         }

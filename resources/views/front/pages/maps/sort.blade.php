@@ -28,20 +28,32 @@
 
     <div class="col-12">
       <h2>Benvenuto nella Sala Grande</h2>
-      <p>Rispondi a tutte e 9 le domande per procedere allo smistamento</p>
+      <p>Rispondi a tutte le domande per procedere allo smistamento</p>
 
-      {{ Form::open() }}
+      @if(session('alert-error'))
+      <div class="alert alert-danger">
+        {{ session('alert-error') }}
+      </div>
+      @endif
+
+      @if(session('alert-success'))
+      <div class="alert alert-success">
+        {{ session('alert-success') }}
+      </div>
+      @endif
+
+      {{ Form::open(['url' => '/maps/great-hall/sort', 'method' => 'POST']) }}
         <div class="question-group">
           @foreach($sorting as $d => $value)
           <h2>{{$value->name}}</h2>
+            <input type="hidden" name="question[{{$d}}]" value="{{$value->id}}"/>
             @php
               $answers = App\Models\PollAnswers::where('id_question',$value->id)->inRandomOrder()->get();
             @endphp
             @foreach($answers as $answer)
             <div id="question[{{$value->id}}]" class="answer-list">
-              <input type="hidden" name="question[{{$d}}]" value="{{$value->id}}"/>
               <input type="checkbox" class="question-checkbox" name="answer[{{$d}}]" value="{{$answer->id}}"/>
-              <label>{{$answer->name}}</label>
+              <label>{{$answer->answer}}</label>
             </div>
             @endforeach
           @endforeach
@@ -63,6 +75,17 @@
             $box.prop("checked", true);
           } else {
             $box.prop("checked", false);
+          }
+        });
+
+        $("form").on("submit", function(e) {
+          var totalQuestions = $("input[type='hidden'][name^='question']").length;
+          var answeredQuestions = $("input[type='checkbox']:checked").length;
+
+          if (answeredQuestions < totalQuestions) {
+            e.preventDefault();
+            alert("Devi rispondere a tutte le " + totalQuestions + " domande del Cappello Parlante prima di procedere.");
+            return false;
           }
         });
       });
