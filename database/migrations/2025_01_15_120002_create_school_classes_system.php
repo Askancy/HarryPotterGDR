@@ -11,15 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Tabella materie
+        // Tabella materie (definizione unificata)
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // es. "Difesa contro le Arti Oscure"
             $table->string('slug')->unique();
             $table->text('description')->nullable();
+
+            // Campi per school_classes_system
             $table->integer('min_grade')->default(1); // anno minimo
             $table->integer('max_grade')->default(7); // anno massimo
             $table->boolean('is_core')->default(true); // materia obbligatoria
+
+            // Campi per lessons_system
+            $table->string('professor_name')->nullable();
+            $table->string('classroom')->nullable();
+            $table->enum('difficulty', ['beginner', 'intermediate', 'advanced', 'expert'])->default('beginner');
+            $table->integer('min_level')->default(1);
+            $table->string('color')->default('#6c757d');
+            $table->integer('base_exp')->default(50);
+            $table->integer('base_house_points')->default(5);
+            $table->string('primary_skill')->nullable();
+            $table->string('secondary_skill')->nullable();
+
             $table->boolean('is_active')->default(true);
             $table->string('icon')->nullable();
             $table->timestamps();

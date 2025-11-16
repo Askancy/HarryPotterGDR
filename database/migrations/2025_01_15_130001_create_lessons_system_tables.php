@@ -11,30 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Tabella materie
-        Schema::create('subjects', function (Blueprint $table) {
-            $table->id();
-            $table->string('name'); // Es: "Pozioni", "Difesa contro le Arti Oscure"
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->string('professor_name')->nullable();
-            $table->string('classroom')->nullable(); // Es: "Aula Pozioni - Sotterranei"
-            $table->enum('difficulty', ['beginner', 'intermediate', 'advanced', 'expert'])->default('beginner');
-            $table->integer('min_level')->default(1);
-            $table->string('icon')->nullable(); // FontAwesome icon class
-            $table->string('color')->default('#6c757d'); // Colore tema materia
-
-            // Ricompense base
-            $table->integer('base_exp')->default(50);
-            $table->integer('base_house_points')->default(5);
-
-            // Quale abilità influenza
-            $table->string('primary_skill')->nullable(); // Es: "intelligence", "dexterity"
-            $table->string('secondary_skill')->nullable();
-
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
+        // NOTA: La tabella 'subjects' è già creata in create_school_classes_system.php
+        // Non viene ricreata qui per evitare duplicazioni
 
         // Tabella lezioni giornaliere
         Schema::create('daily_lessons', function (Blueprint $table) {
@@ -113,6 +91,6 @@ return new class extends Migration
         Schema::dropIfExists('user_subject_progress');
         Schema::dropIfExists('lesson_attendances');
         Schema::dropIfExists('daily_lessons');
-        Schema::dropIfExists('subjects');
+        // NOTA: 'subjects' non viene eliminata qui, è gestita in create_school_classes_system.php
     }
 };
