@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             // Owner
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('species_id')->constrained('creature_species')->onDelete('cascade');
 
             // Naming
@@ -61,10 +61,14 @@ return new class extends Migration
             $table->enum('status', ['healthy', 'sick', 'injured', 'sleeping', 'dead'])->default('healthy');
 
             // Location
-            $table->foreignId('current_habitat_id')->nullable()->constrained('locations')->onDelete('set null');
+            $table->integer('current_habitat_id')->unsigned()->nullable();
 
             $table->timestamps();
             $table->softDeletes(); // Soft delete per le creature "rilasciate"
+
+            // Foreign keys
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('current_habitat_id')->references('id')->on('locations')->onDelete('set null');
 
             // Indexes
             $table->index(['user_id', 'species_id']);

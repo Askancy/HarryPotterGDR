@@ -57,7 +57,7 @@ return new class extends Migration
         // Tabella perk utente
         Schema::create('user_perks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('perk_id')->constrained('perks')->onDelete('cascade');
 
             $table->integer('rank')->default(1); // Livello del perk se upgradabile
@@ -66,6 +66,7 @@ return new class extends Migration
             $table->timestamp('unlocked_at')->useCurrent();
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unique(['user_id', 'perk_id']);
         });
     }

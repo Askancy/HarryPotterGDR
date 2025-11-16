@@ -59,7 +59,7 @@ return new class extends Migration
         // Tabella partecipazioni lezioni
         Schema::create('lesson_attendances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('daily_lesson_id')->constrained('daily_lessons')->onDelete('cascade');
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
 
@@ -75,6 +75,7 @@ return new class extends Migration
             $table->timestamp('attended_at')->useCurrent();
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unique(['user_id', 'daily_lesson_id']);
             $table->index(['user_id', 'created_at']);
         });
@@ -82,7 +83,7 @@ return new class extends Migration
         // Tabella progressi materie utente
         Schema::create('user_subject_progress', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
 
             $table->integer('level')->default(1);
@@ -99,6 +100,7 @@ return new class extends Migration
             $table->timestamp('last_attended')->nullable();
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unique(['user_id', 'subject_id']);
         });
     }

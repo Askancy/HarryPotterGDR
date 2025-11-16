@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             // User reference
-            $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
+            $table->integer('user_id')->unsigned()->unique();
 
             // Overall stats
             $table->integer('total_duels')->default(0);
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->integer('total_dodges')->default(0);
 
             // Favorite spell
-            $table->foreignId('favorite_spell_id')->nullable()->constrained('spells')->onDelete('set null');
+            $table->integer('favorite_spell_id')->unsigned()->nullable();
             $table->integer('favorite_spell_uses')->default(0);
 
             // Streaks
@@ -60,6 +60,10 @@ return new class extends Migration
             $table->bigInteger('total_money_earned')->default(0);
 
             $table->timestamps();
+
+            // Foreign keys
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('favorite_spell_id')->references('id')->on('spells')->onDelete('set null');
 
             // Indexes
             $table->index('ranking_points');

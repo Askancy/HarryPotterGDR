@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('private_messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
+            $table->integer('sender_id')->unsigned();
+            $table->integer('receiver_id')->unsigned();
             $table->text('message');
             $table->boolean('is_read')->default(false);
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
 
+            $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('receiver_id')->references('id')->on('users')->onDelete('cascade');
             $table->index(['sender_id', 'receiver_id']);
             $table->index(['receiver_id', 'is_read']);
         });
@@ -27,11 +29,13 @@ return new class extends Migration
         // Tabella conversazioni per raggruppare messaggi
         Schema::create('conversations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_one_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('user_two_id')->constrained('users')->onDelete('cascade');
+            $table->integer('user_one_id')->unsigned();
+            $table->integer('user_two_id')->unsigned();
             $table->timestamp('last_message_at')->nullable();
             $table->timestamps();
 
+            $table->foreign('user_one_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_two_id')->references('id')->on('users')->onDelete('cascade');
             $table->unique(['user_one_id', 'user_two_id']);
         });
     }

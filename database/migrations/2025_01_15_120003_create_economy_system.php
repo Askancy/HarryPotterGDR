@@ -14,7 +14,7 @@ return new class extends Migration
         // Tabella wallet/portafoglio (tracking dettagliato del denaro)
         Schema::create('wallets', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned()->unique();
             $table->decimal('galleons', 15, 2)->default(0);
             $table->decimal('sickles', 15, 2)->default(0);
             $table->decimal('knuts', 15, 2)->default(0);
@@ -22,13 +22,14 @@ return new class extends Migration
             $table->decimal('total_spent', 15, 2)->default(0);
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->index('galleons');
         });
 
         // Tabella transazioni
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->enum('type', [
                 'quest_reward',      // Ricompensa quest
                 'level_up',          // Reward livello
@@ -47,12 +48,15 @@ return new class extends Migration
             $table->enum('currency', ['galleons', 'sickles', 'knuts'])->default('galleons');
             $table->decimal('balance_after', 15, 2);
             $table->text('description');
-            $table->foreignId('related_user_id')->nullable()->constrained('users')->onDelete('set null'); // per trasferimenti
-            $table->foreignId('related_shop_id')->nullable()->constrained('location_shops')->onDelete('set null');
+            $table->integer('related_user_id')->unsigned()->nullable(); // per trasferimenti
+            $table->integer('related_shop_id')->unsigned()->nullable();
             $table->string('reference_type')->nullable(); // es. "App\Models\Quest"
             $table->unsignedBigInteger('reference_id')->nullable(); // ID dell'oggetto correlato
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('related_user_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('related_shop_id')->references('id')->on('location_shops')->onDelete('set null');
             $table->index(['user_id', 'created_at']);
             $table->index('type');
         });
@@ -60,7 +64,7 @@ return new class extends Migration
         // Tabella inventario negozi
         Schema::create('shop_inventory', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('shop_id')->constrained('location_shops')->onDelete('cascade');
+            $table->integer('shop_id')->unsigned();
             $table->string('item_type'); // es. "App\Models\Objects", "App\Models\Spell"
             $table->unsignedBigInteger('item_id');
             $table->integer('quantity')->default(0);
@@ -71,6 +75,7 @@ return new class extends Migration
             $table->integer('restock_quantity')->default(10); // quantità riassortimento
             $table->timestamps();
 
+            $table->foreign('shop_id')->references('id')->on('location_shops')->onDelete('cascade');
             $table->unique(['shop_id', 'item_type', 'item_id'], 'shop_item_unique');
             $table->index('is_available');
         });
@@ -78,8 +83,8 @@ return new class extends Migration
         // Tabella acquisti negozio
         Schema::create('shop_purchases', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('shop_id')->constrained('location_shops')->onDelete('cascade');
-            $table->foreignId('buyer_id')->constrained('users')->onDelete('cascade');
+            $table->integer('shop_id')->unsigned();
+            $table->integer('buyer_id')->unsigned();
             $table->foreignId('shop_inventory_id')->constrained('shop_inventory')->onDelete('cascade');
             $table->integer('quantity');
             $table->decimal('unit_price', 10, 2);
@@ -87,6 +92,8 @@ return new class extends Migration
             $table->decimal('shop_profit', 10, 2)->nullable(); // profitto del negozio
             $table->timestamps();
 
+            $table->foreign('shop_id')->references('id')->on('location_shops')->onDelete('cascade');
+            $table->foreign('buyer_id')->references('id')->on('users')->onDelete('cascade');
             $table->index(['shop_id', 'created_at']);
             $table->index('buyer_id');
         });
@@ -104,17 +111,18 @@ return new class extends Migration
             $table->integer('duration_minutes')->default(60);
             $table->integer('cooldown_hours')->default(24);
             $table->json('requirements')->nullable(); // skill requirements
-            $table->foreignId('location_id')->nullable()->constrained()->onDelete('set null');
+            $table->integer('location_id')->unsigned()->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
+            $table->foreign('location_id')->references('id')->on('locations')->onDelete('set null');
             $table->index('slug');
         });
 
         // Tabella lavori completati
         Schema::create('job_completions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('job_id')->constrained()->onDelete('cascade');
             $table->decimal('payment_received', 10, 2);
             $table->integer('quality_score')->nullable(); // 0-100
@@ -123,6 +131,7 @@ return new class extends Migration
             $table->dateTime('next_available_at')->nullable(); // per cooldown
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->index(['user_id', 'job_id']);
             $table->index('completed_at');
         });

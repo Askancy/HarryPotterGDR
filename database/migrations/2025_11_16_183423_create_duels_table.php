@@ -15,19 +15,19 @@ return new class extends Migration
             $table->id();
 
             // Players
-            $table->foreignId('challenger_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('opponent_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('winner_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->integer('challenger_id')->unsigned();
+            $table->integer('opponent_id')->unsigned();
+            $table->integer('winner_id')->unsigned()->nullable();
 
             // Status
             $table->enum('status', ['pending', 'active', 'completed', 'declined', 'expired', 'fled'])->default('pending');
 
             // Location
-            $table->foreignId('location_id')->nullable()->constrained('locations')->onDelete('set null');
+            $table->integer('location_id')->unsigned()->nullable();
 
             // Turn tracking
             $table->integer('current_turn')->default(0);
-            $table->foreignId('current_player_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->integer('current_player_id')->unsigned()->nullable();
 
             // Initial stats (snapshot at duel start)
             $table->integer('challenger_health')->default(0);
@@ -60,6 +60,13 @@ return new class extends Migration
             $table->timestamp('ended_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
+
+            // Foreign keys
+            $table->foreign('challenger_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('opponent_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('winner_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('location_id')->references('id')->on('locations')->onDelete('set null');
+            $table->foreign('current_player_id')->references('id')->on('users')->onDelete('set null');
 
             // Indexes
             $table->index(['challenger_id', 'opponent_id']);

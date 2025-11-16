@@ -71,12 +71,13 @@ return new class extends Migration
         Schema::create('event_participations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('school_event_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->enum('status', ['registered', 'attended', 'missed', 'excused'])->default('registered');
             $table->integer('score')->nullable(); // punteggio ottenuto nell'evento
             $table->text('notes')->nullable();
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unique(['school_event_id', 'user_id']);
             $table->index('status');
         });
