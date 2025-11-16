@@ -32,7 +32,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('subject_id')->constrained()->onDelete('cascade');
             $table->foreignId('school_year_id')->constrained()->onDelete('cascade');
-            $table->foreignId('professor_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->integer('professor_id')->unsigned()->nullable();
             $table->integer('grade_level'); // 1-7
             $table->string('section')->nullable(); // es. "A", "B" per dividere classi
             $table->integer('max_students')->default(30);
@@ -41,6 +41,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
+            $table->foreign('professor_id')->references('id')->on('users')->onDelete('set null');
             $table->index(['subject_id', 'school_year_id']);
             $table->index('grade_level');
         });
@@ -48,7 +49,7 @@ return new class extends Migration
         // Tabella iscrizioni alle classi
         Schema::create('class_enrollments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('school_class_id')->constrained()->onDelete('cascade');
             $table->foreignId('school_year_id')->constrained()->onDelete('cascade');
             $table->enum('status', ['enrolled', 'dropped', 'completed', 'failed'])->default('enrolled');
@@ -58,6 +59,7 @@ return new class extends Migration
             $table->integer('absence_count')->default(0);
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unique(['user_id', 'school_class_id', 'school_year_id'], 'user_class_year_unique');
             $table->index('status');
         });
@@ -66,18 +68,20 @@ return new class extends Migration
         Schema::create('grades', function (Blueprint $table) {
             $table->id();
             $table->foreignId('enrollment_id')->constrained('class_enrollments')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('school_class_id')->constrained()->onDelete('cascade');
             $table->enum('type', ['homework', 'quiz', 'midterm', 'final', 'project', 'participation']);
             $table->enum('grade_letter', ['O', 'E', 'A', 'P', 'D', 'T']); // Outstanding, Exceeds Expectations, Acceptable, Poor, Dreadful, Troll
             $table->integer('grade_numeric')->nullable(); // 0-100
             $table->integer('weight')->default(1); // peso del voto
             $table->text('feedback')->nullable();
-            $table->foreignId('graded_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->integer('graded_by')->unsigned()->nullable();
             $table->date('assignment_date')->nullable();
             $table->date('graded_date');
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('graded_by')->references('id')->on('users')->onDelete('set null');
             $table->index(['user_id', 'school_class_id']);
             $table->index('grade_letter');
         });
@@ -85,7 +89,7 @@ return new class extends Migration
         // Tabella performance annuale (per promozione/bocciatura)
         Schema::create('yearly_performances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('school_year_id')->constrained()->onDelete('cascade');
             $table->integer('grade_level'); // anno scolastico (1-7)
             $table->decimal('average_grade', 5, 2)->nullable(); // media voti
@@ -98,6 +102,7 @@ return new class extends Migration
             $table->date('evaluation_date')->nullable();
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unique(['user_id', 'school_year_id'], 'user_year_performance_unique');
             $table->index('status');
         });

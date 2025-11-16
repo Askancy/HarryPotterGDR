@@ -42,12 +42,13 @@ return new class extends Migration
         // Tabella log recupero salute/mana
         Schema::create('health_regeneration_log', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->enum('type', ['health', 'mana', 'both']);
             $table->integer('amount');
             $table->string('source'); // Es: "rest", "potion", "spell", "natural"
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->index(['user_id', 'created_at']);
         });
     }

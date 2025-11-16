@@ -44,24 +44,26 @@ return new class extends Migration
         // Tabella inventario vestiti utente (many-to-many)
         Schema::create('user_clothing', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('clothing_id')->constrained('clothing')->onDelete('cascade');
             $table->integer('quantity')->default(1);
             $table->timestamp('acquired_at')->useCurrent();
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unique(['user_id', 'clothing_id']);
         });
 
         // Tabella vestiti equipaggiati
         Schema::create('equipped_clothing', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->enum('slot', ['hat', 'robe', 'shirt', 'pants', 'shoes', 'accessory', 'cloak']);
             $table->foreignId('clothing_id')->constrained('clothing')->onDelete('cascade');
             $table->timestamp('equipped_at')->useCurrent();
             $table->timestamps();
 
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unique(['user_id', 'slot']);
         });
     }

@@ -19,11 +19,11 @@ return new class extends Migration
 
             // Turn info
             $table->integer('turn_number')->default(1);
-            $table->foreignId('player_id')->constrained('users')->onDelete('cascade');
+            $table->integer('player_id')->unsigned();
 
             // Action
             $table->enum('action_type', ['spell', 'defend', 'item', 'flee'])->default('spell');
-            $table->foreignId('spell_id')->nullable()->constrained('spells')->onDelete('set null');
+            $table->integer('spell_id')->unsigned()->nullable();
             $table->string('item_used')->nullable();
 
             // Results
@@ -50,6 +50,10 @@ return new class extends Migration
             $table->integer('opponent_mana_after')->default(0);
 
             $table->timestamps();
+
+            // Foreign keys
+            $table->foreign('player_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('spell_id')->references('id')->on('spells')->onDelete('set null');
 
             // Indexes
             $table->index(['duel_id', 'turn_number']);

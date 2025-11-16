@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             // References
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->integer('user_id')->unsigned();
             $table->foreignId('creature_id')->constrained('user_creatures')->onDelete('cascade');
 
             // Interaction type
@@ -38,6 +38,9 @@ return new class extends Migration
             $table->boolean('was_successful')->default(true);
 
             $table->timestamps();
+
+            // Foreign keys
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             // Indexes
             $table->index(['user_id', 'created_at']);

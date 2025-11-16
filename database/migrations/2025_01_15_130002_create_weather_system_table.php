@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('weather_conditions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('location_id')->nullable()->constrained('locations')->onDelete('cascade');
+            $table->integer('location_id')->unsigned()->nullable();
             $table->string('map_slug')->nullable(); // Per retrocompatibilità con vecchie mappe
 
             $table->date('date');
@@ -34,6 +34,7 @@ return new class extends Migration
 
             $table->timestamps();
 
+            $table->foreign('location_id')->references('id')->on('locations')->onDelete('cascade');
             $table->index(['date', 'location_id']);
         });
 
