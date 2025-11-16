@@ -39,10 +39,12 @@ return new class extends Migration
             $table->index(['school_year_id', 'start_date']);
         });
 
-        // Tabella eventi scolastici
+        // Tabella eventi scolastici (definizione unificata)
         Schema::create('school_events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('school_year_id')->constrained()->onDelete('cascade');
+
+            // Campi da school_calendar_system
+            $table->foreignId('school_year_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('school_term_id')->nullable()->constrained()->onDelete('set null');
             $table->string('name');
             $table->enum('type', [
@@ -52,18 +54,34 @@ return new class extends Migration
                 'ceremony',       // Cerimonie (es. Smistamento)
                 'tournament',     // Tornei
                 'lesson',         // Lezioni speciali
+                'holiday',        // Festività
+                'event',          // Eventi generici
                 'special'         // Eventi speciali
             ]);
             $table->text('description')->nullable();
-            $table->dateTime('event_date');
+
+            // Date (unificato da entrambe le migrazioni)
+            $table->dateTime('event_date')->nullable(); // Per eventi puntuali
+            $table->date('start_date')->nullable(); // Per eventi con durata
+            $table->date('end_date')->nullable();
             $table->integer('duration_minutes')->default(60);
+
+            // Campi da school_calendar_system
             $table->json('participants')->nullable(); // array di user_ids o house_ids
             $table->json('rewards')->nullable(); // ricompense per partecipazione
             $table->boolean('is_mandatory')->default(false);
             $table->boolean('completed')->default(false);
+
+            // Campi da weather_system
+            $table->boolean('suspend_lessons')->default(false);
+            $table->text('bonuses')->nullable(); // JSON
+            $table->string('icon')->nullable();
+            $table->string('color')->default('#007bff');
+
             $table->timestamps();
 
             $table->index(['school_year_id', 'event_date']);
+            $table->index('start_date');
             $table->index('type');
         });
 
