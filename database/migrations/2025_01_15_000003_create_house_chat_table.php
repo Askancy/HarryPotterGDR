@@ -24,7 +24,7 @@ class CreateHouseChatTable extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('house_id')->references('id')->on('team')->onDelete('cascade');
+            $table->foreign('house_id')->references('id')->on('houses')->onDelete('cascade');
         });
 
         Schema::create('house_events', function (Blueprint $table) {
@@ -39,7 +39,7 @@ class CreateHouseChatTable extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->foreign('house_id')->references('id')->on('team')->onDelete('cascade');
+            $table->foreign('house_id')->references('id')->on('houses')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
         });
 
@@ -65,7 +65,7 @@ class CreateHouseChatTable extends Migration
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
 
-            $table->foreign('house_id')->references('id')->on('team')->onDelete('cascade');
+            $table->foreign('house_id')->references('id')->on('houses')->onDelete('cascade');
             $table->foreign('posted_by')->references('id')->on('users')->onDelete('cascade');
         });
     }
