@@ -57,27 +57,8 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Tabella eventi speciali e festività
-        Schema::create('school_events', function (Blueprint $table) {
-            $table->id();
-            $table->string('name'); // Es: "Festa di Halloween", "Ballo del Ceppo"
-            $table->text('description')->nullable();
-            $table->date('start_date');
-            $table->date('end_date')->nullable();
-            $table->enum('type', ['holiday', 'exam', 'event', 'special'])->default('event');
-
-            // Durante eventi, potrebbero non esserci lezioni
-            $table->boolean('suspend_lessons')->default(false);
-
-            // Bonus speciali durante l'evento
-            $table->text('bonuses')->nullable(); // JSON
-
-            $table->string('icon')->nullable();
-            $table->string('color')->default('#007bff');
-            $table->timestamps();
-
-            $table->index('start_date');
-        });
+        // NOTA: La tabella 'school_events' è già creata in create_school_calendar_system.php
+        // Non viene ricreata qui per evitare duplicazioni
     }
 
     /**
@@ -85,7 +66,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('school_events');
+        // NOTA: 'school_events' non viene eliminata qui, è gestita in create_school_calendar_system.php
         Schema::dropIfExists('school_calendar');
         Schema::dropIfExists('weather_conditions');
     }
